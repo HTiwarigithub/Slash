@@ -207,7 +207,8 @@ router.post('/Payment/paymentTransaction',pay.paymentTransaction);
 
 //Search
 router.post('/search/Search',search.Search);
-
+router.post('/search/Searchphone',search.Searchphone);
+router.post('/search/Select',search.Select);
 
 
 router.post('/Admin/adminLogin',(req,res)=>{
