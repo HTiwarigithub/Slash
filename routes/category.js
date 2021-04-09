@@ -106,7 +106,7 @@ exports.SelectBystoretype = (req, res) => {
     db.close();
     db.connect(conn, () => {
         var request = new db.Request();
-        request.input('ActionType',db.NVarChar,'SelectBystoretype');
+        request.input('ActionType',db.NVarChar,'Store_By_Category');
         request.input('storeType',db.NVarChar, req.body.storeType);
         request.execute('prcslashcategory', (error, result) => {
             console.log(error)

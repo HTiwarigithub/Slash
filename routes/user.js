@@ -47,7 +47,7 @@ exports.userSignup = (req, res) => {
                     http.request(options, callback).end();*/
                     var message = 'Your Slash app otp is : ' + otp;
                     var number = req.body.phone;
-                    http.get('http://www.teleshoppe.com/serv/BulkPush/?user=Terranoecom&pass=SlashPass1120&message=' + message + '&msisdn=' + number + '&sender=SVMTPL&type=text', (response) => {
+                    http.get('http://teleshoppe.co.in/serv/BulkPush/?user=Terranoecom&pass=SlashPass1120&message=' + message + '&msisdn=' + number + '&sender=SVMTPL&type=text', (response) => {
                         let data = '';
                         response.on('data', (chunk) => {
                             data += chunk;
@@ -118,7 +118,7 @@ exports.login = (req, res) => {
                     });*/
                     var message = 'Your Slash app otp is : ' + result.recordset[0].otp;
                     var number = req.body.phone;
-                    http.get('http://www.teleshoppe.com/serv/BulkPush/?user=Terranoecom&pass=SlashPass1120&message=' + message + '&msisdn=' + number + '&sender=SVMTPL&type=text', (response) => {
+                    http.get('http://teleshoppe.co.in/serv/BulkPush/?user=Terranoecom&pass=SlashPass1120&message=' + message + '&msisdn=' + number + '&sender=SVMTPL&type=text', (response) => {
                         let data = '';
                         response.on('data', (chunk) => {
                             data += chunk;
@@ -492,3 +492,93 @@ exports.UpdateName = (req,res) => {
         })
     })
 }
+
+exports.Update_no = (req, res) => {
+    db.close();
+    db.connect(conn, () => {
+        var otp = Math.floor(1000 + Math.random() * 9000);
+        console.log(otp);
+        var request = new db.Request();
+        request.input('ActionType', db.NVarChar, 'Login');
+        request.input('new_phone',db.NVarChar,req.body.new_phone);
+        request.input('phone', db.NVarChar, req.body.phone);
+        request.input('otp', db.NVarChar, otp);
+        request.execute('prcslashUser', (error, result) => {
+            if (error) {
+                console.log(error);
+                res.send({
+                    "status": "0",
+                    "message": "Error occured",
+                    "data": {}
+                });
+            }
+            else {
+                if (result.recordset == 0) {
+                    res.send({
+                        "status": "0",
+                        "message": "Please register first",
+                        "data": {}
+                    });
+                }
+                else {
+                    var message = 'Your Slash app otp is : ' + result.recordset[0].otp;
+                    var number = req.body.new_phone;
+                    http.get('http://www.teleshoppe.com/serv/BulkPush/?user=Terranoecom&pass=SlashPass1120&message=' + message + '&msisdn=' + number + '&sender=SVMTPL&type=text', (response) => {
+                        let data = '';
+                        response.on('data', (chunk) => {
+                            data += chunk;
+                        });
+                        response.on('end', () => {
+                            res.send({
+                                "status": "1",
+                                "message": "Otp Send to your mobile",
+                                "data": result.recordset[0]
+                            })
+                        });
+
+                    }).on("error", (err) => {
+                        console.log("Error: " + err.message);
+                    });
+                }
+            }
+        });
+    });
+};
+
+exports.submitOtp_no_change = (req, res) => {
+    db.close();
+    db.connect(conn, () => {
+        var request = new db.Request();
+        request.input('ActionType', db.NVarChar, 'submitOtp_no_change');
+        request.input('uid', db.NVarChar, req.body.uid);
+        request.input('new_phone',db.NVarChar,req.body.new_phone);
+        request.input('otp', db.NVarChar, req.body.otp);
+        request.execute('prcslashUser', (error, result) => {
+            if (error) {
+                res.send({
+                    "status": "0",
+                    "message": "Error occured",
+                    "data": {}
+                });
+            }
+            else { 
+                if (result.recordsets.length == 0) {
+                    console.log("resultzero",result.recordsets)
+                    res.send({
+                        "status": "0",
+                        "message": "Incorrect OTP",
+                        "data": {}
+                    });
+                }
+                else {
+                    console.log("resultone",result)
+                    res.send({
+                        "status": "1",
+                        "message": "Updated Successfully",
+                        "data": result.recordset
+                    });
+                }
+            }
+        });
+    });
+};

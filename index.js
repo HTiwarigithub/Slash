@@ -54,6 +54,7 @@ var connection = {
     user: 'slashDatabase',
     password: 'slashDatabase',
     database : 'slash',
+    requestTimeout: 300000,
     options: {
         enableArithAbort: false
       }
@@ -91,12 +92,12 @@ http.createServer(app).listen(app.get('port'), function(){
 
 var router = express.Router();
 app.get('/', function (req, res) {
-    res.send('this is the main Page Slash');
+    res.send('This is the main Page Slash');
 });
 
 app.use('/api', router);
 router.get('', function(req, res) {
-  res.send("This is testing api urls");
+  res.send("This is Testing api URLS");
 });
 
 router.post('/Vendor/addVendor',upload.single('file'),vendor.addVendor);
@@ -115,7 +116,7 @@ router.post('/Vendor/deleteProfilePic',vendor.deleteProfilePic);
 router.post('/Vendor/uploadDoc',upload1.array('doc'),vendor.uploadDoc)
 router.post('/Vendor/editDoc',upload1.single('doc'),vendor.editDoc)
 router.post('/Vendor/deleteDoc',vendor.deleteDoc);
-
+router.post('/Vendor/Store_By_Category',vendor.Store_By_Category);
 
 
 router.post('/Store/addStore',store.addStore);
@@ -192,6 +193,10 @@ router.get('/User/AllUser',user.getAll);
 router.post('/User/UpdateImage',user.UpdateImage);
 //name update
 router.post('/User/UpdateName',user.UpdateName);
+//update_no
+router.post('/User/Update_no',user.Update_no);
+//submitOtp_no_change
+router.post('/User/submitOtp_no_change',user.submitOtp_no_change);
 
 router.get('/Brand/getBrandList',brands.getBrandList);
 router.get('/category/getCategoryList',category.getCategoryList);
@@ -209,6 +214,7 @@ router.post('/Payment/paymentTransaction',pay.paymentTransaction);
 router.post('/search/Search',search.Search);
 router.post('/search/Searchphone',search.Searchphone);
 router.post('/search/Select',search.Select);
+
 
 
 router.post('/Admin/adminLogin',(req,res)=>{

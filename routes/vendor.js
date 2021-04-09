@@ -1,3 +1,4 @@
+const { Console } = require('console');
 var http = require('http');
 exports.addVendor = (req, res) => {
     db.close();
@@ -261,20 +262,23 @@ exports.vendorLogin = (req, res) => {
                         
                         var message = 'Your Slash app otp is : ' + otp;
                     var number = req.body.vPhone;
-                    http.get('http://www.teleshoppe.com/serv/BulkPush/?user=Terranoecom&pass=SlashPass1120&message=' + message + '&msisdn=' + number + '&sender=SVMTPL&type=text', (response) => {
+                    console.log("sehbgfvhkdsfbyvhk",'http://www.teleshoppe.com/serv/BulkPush/?user=Terranoecom&pass=SlashPass1120&message=' + message + '&msisdn=' + number + '&sender=SVMTPL&type=text')
+                    http.get('http://teleshoppe.co.in/serv/BulkPush/?user=Terranoecom&pass=SlashPass1120&message=' + message + '&msisdn=' + number + '&sender=SVMTPL&type=text', (response) => {
                         let data = '';
                         response.on('data', (chunk) => {
                             data += chunk;
+                            
                         });
                         response.on('end', () => {
                             res.send({
                                 "status": "1",
                                 "message": "Otp Send to your mobile",
-                                "data": result.recordset[0]
+                                "data": result.recordsets[0][0]
                             })
                         });
 
                     }).on("error", (err) => {
+            
                         console.log("Error: " + err.message);
                     });
                     }
@@ -303,29 +307,31 @@ exports.submit_otp = (req, res) => {
         console.log(otp);
         var request = new db.Request();
         request.input('ActionType', db.NVarChar, 'submit_otp');
-        request.input('vid', db.NVarChar, req.body.vid);
+        request.input('vid', db.Int, req.body.vid);
         request.input('otp', db.NVarChar, req.body.otp);
         request.execute('prcslashVendor', (error, result) => {
             if (error) {
+                console.log("errorrrrrr",error)
                 res.send({
                     "status": "0",
                     "message": "Error occured",
-                    "data": {}
+                    "data": []
                 });
             }
             else {
-                if (result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B'] == 0) {
+                if (result.recordsets[0].length == 0) {
                     res.send({
                         "status": "0",
                         "message": "Incorrect otp",
-                        "data": {}
+                        "data": []
                     });
                 }
                 else {
+                    console.log(result)
                     res.send({
                         "status": "1",
-                        "message": "login successfully",
-                        "data": Object.values(JSON.parse(result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B']))
+                        "message": "Login Successfully",
+                        "data": result.recordsets[0]
                     });
                 }
             }
@@ -348,8 +354,7 @@ exports.vendorList = (req, res) => {
                 });
             }
             else {
-                console.log(result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B']);
-                if (result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B'] == 0) {
+                if (result.recordset == 0) {
                     res.send({
                         "status": "0",
                         "message": "no vendor",
@@ -360,7 +365,7 @@ exports.vendorList = (req, res) => {
                     res.send({
                         "status": "1",
                         "message": "Vendor List",
-                        "data": Object.values(JSON.parse(result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B']))
+                        "data": result.recordset
                     });
                 }
             }
@@ -373,6 +378,7 @@ exports.vendorListApp = (req, res) => {
     db.connect(conn, () => {
         var lat = req.body.lat;
         var long = req.body.long;
+        var page = req.body.page
         var request = new db.Request();
         request.input('ActionType', db.NVarChar, 'Select');
         request.execute('prcslashVendor', (error, result) => {
@@ -385,17 +391,16 @@ exports.vendorListApp = (req, res) => {
                 });
             }
             else {
-                // console.log(result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B']);
-
-                var array = Object.values(JSON.parse(result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B']))
-                var range = 10;
+               
+                var array = result.recordset.slice()
+                
+                var range = 400;
                 for (var i = array.length - 1; i >= 0; i--) {
                     var slat;
                     var slong;
                     slat = array[i].storeLat;
                     slong = array[i].storeLong;
                     var dis = distance(lat, long, slat, slong, 'K')
-                    console.log(dis);
                     array[i].distance = dis;
                     if (!(dis <= range)) {
                         array.splice(i, 1);
@@ -404,30 +409,16 @@ exports.vendorListApp = (req, res) => {
                 var jsonAsArray = array.sort(function (a, b) {
                     return parseFloat(a.distance) - parseFloat(b.distance);
                 });
-
-
-                if (result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B'] == 0) {
+                
+                if (result.recordset == 0) {
                     res.send({
                         "status": "0",
                         "message": "no vendor",
-                        "data": []
+                        "data": [] 
                     });
                 }
                 else {
-                    if(jsonAsArray.length != 0){
-                        res.send({
-                            "status": "0",
-                            "message": "Vendor List",
-                            "data": jsonAsArray
-                        });
-                    }
-                     else{
-                        res.send({
-                            "status": "1",
-                            "message": "Vendor List",
-                            "data": JSON.parse(result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B'])
-                        });
-                    }   
+                    page_no(jsonAsArray,result.recordset,page,res)
                 }
             }
         });
@@ -439,6 +430,7 @@ function distance(lat1, lon1, lat2, lon2, unit) {
         return 0;
     }
     else {
+      
         var radlat1 = Math.PI * lat1 / 180;
         var radlat2 = Math.PI * lat2 / 180;
         var theta = lon1 - lon2;
@@ -453,6 +445,27 @@ function distance(lat1, lon1, lat2, lon2, unit) {
         if (unit == "K") { dist = dist * 1.609344 }
         if (unit == "N") { dist = dist * 0.8684 }
         return dist;
+    }
+}
+
+function page_no (filterdata,fulldata,page,res){
+    var count = 10
+    var start_range = (page - 1) * count
+    var End_range = ( page * count ) - 1
+    if(filterdata.length != 0){
+        console.log("filterrrrrrrrr",filterdata.length)
+        res.send({
+            "status": "1",
+            "message": "Vendor List",
+            "data": filterdata.slice(start_range,End_range)
+        });
+    }
+     else{
+        res.send({
+            "status": "1",
+            "message": "Vendor List",
+            "data": fulldata.slice(start_range,End_range)
+        });
     }
 }
 
@@ -934,5 +947,56 @@ exports.updatepayment = (req, res) => {
             }
 
         });
+    })
+};
+
+exports.Store_By_Category = (req, res) => {
+    db.close();
+    db.connect(conn, () => {
+        var request = new db.Request();
+        var store_Type = req.body.store_Type
+        var action_type="";
+        var storetype_String="";
+        if(store_Type == 0){
+          action_type = 'Store_By_CategoryALL'
+        }else{
+          action_type = 'Store_By_Category'
+          for(var i =0 ; i<store_Type.length; i++){
+            if(i == store_Type.length -1){
+                storetype_String = storetype_String + store_Type[i];
+            }else{
+                console.log(store_Type[i]+",")
+                storetype_String = storetype_String +  store_Type[i]+",";
+            }
+          }
+        }
+        request.input("ActionType",action_type);
+        request.input("store_Type",store_Type);
+        request.input("page_no",db.Int,req.body.page_no);
+        request.execute('prcslashVendor', (error, result) => {
+            if (error) {
+                res.send({
+                    "status": "0",
+                    "message": "Error occured"
+                })
+            }
+            else {
+                if (result.rowsAffected == 0) {
+                    res.send({
+                        "status": "0",
+                        "message": "Error in deleting documents"
+                    })
+                }
+                else {
+                    res.send({
+                        "status": "1",
+                        "message": "Store list",
+                        "data":result.recordset
+                    })
+                }
+            }
+
+        });
+           
     })
 };

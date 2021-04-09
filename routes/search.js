@@ -71,7 +71,7 @@ exports.Searchphone = (req, res) => {
                 });
             }
             else {
-                if (result.recordset == 0) {
+                if (result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B'] == 0) {
                     res.send({
                         "status": "0",
                         "message": "No Result",
@@ -79,11 +79,11 @@ exports.Searchphone = (req, res) => {
                     });
                 }
                 else {
-                    console.log("hiiiiiiii",result.recordset)
+                    console.log("hiiiiiiii",result.recordset[0])
                     res.send({
                         "status": "1",
                         "message": "Search Result",
-                        "data": result.recordset
+                        "data": Object.values(JSON.parse(result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B']))
                     });
                 }
             }
@@ -107,7 +107,7 @@ exports.Select = (req, res) => {
                 });
             }
             else {
-                if (result.recordset == 0) {
+                if (result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B'] == 0) {
                     res.send({
                         "status": "0",
                         "message": "No Result",
@@ -118,7 +118,7 @@ exports.Select = (req, res) => {
                     res.send({
                         "status": "1",
                         "message": "Search Result",
-                        "data": result.recordset
+                        "data": Object.values(JSON.parse(result.recordset[0]['JSON_F52E2B61-18A1-11d1-B105-00805F49916B']))
                     });
                 }
             }
